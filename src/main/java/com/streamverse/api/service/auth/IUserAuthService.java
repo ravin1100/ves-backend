@@ -11,4 +11,6 @@ public interface IUserAuthService {
 
 	UserResponse authenticateUser(LoginRequest request) throws BadRequestException;
 	
+	UserResponse registerUser(LoginRequest request);
+	
 }

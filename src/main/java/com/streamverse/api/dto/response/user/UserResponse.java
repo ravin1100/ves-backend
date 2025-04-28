@@ -14,6 +14,7 @@ public class UserResponse{
 	private boolean isEmailVerified;
 	private boolean isMobileNumberVerified;
 	private String role;
+	private String accessToken;
 	
 }
 		

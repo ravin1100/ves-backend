@@ -1,6 +1,6 @@
 package com.streamverse.api.model.user;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -37,7 +37,7 @@ public class User {
 	private String password;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
-	private Set<UserRole> userRoles;
+	private List<UserRole> userRoles;
 	
 	@Column(columnDefinition = "boolean default false")
 	private boolean isEmailVerified;

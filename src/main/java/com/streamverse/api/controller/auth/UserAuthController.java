@@ -23,9 +23,16 @@ public class UserAuthController {
 	
 	private final IUserAuthService userAuthService;
 
-	@PostMapping(value = "/authenticate")
+	@PostMapping(value = "/sign-in")
 	public ResponseEntity<UserResponse> authenticateUser(@RequestBody LoginRequest request) throws BadRequestException{
 		return ResponseEntity.ok(userAuthService.authenticateUser(request));
 	}
+	
+	@PostMapping(value = "/sign-up")
+	public ResponseEntity<UserResponse> registerUser(@RequestBody LoginRequest request) throws BadRequestException{
+		return ResponseEntity.ok(userAuthService.registerUser(request));
+	}
+	
+	
 	
 }

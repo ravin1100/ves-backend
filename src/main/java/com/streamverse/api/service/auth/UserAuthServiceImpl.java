@@ -1,5 +1,7 @@
 package com.streamverse.api.service.auth;
 
+import java.util.Map;
+
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import com.streamverse.api.dto.request.auth.LoginRequest;
 import com.streamverse.api.dto.response.user.UserResponse;
 import com.streamverse.api.model.user.User;
 import com.streamverse.api.repository.IUserRepository;
+import com.streamverse.api.utility.JwtTokenUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,21 +20,31 @@ public class UserAuthServiceImpl implements IUserAuthService{
 	
 	private final IUserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenUtil jwtTokenUtil;
 	
 
 	@Override
 	public UserResponse authenticateUser(LoginRequest request) throws BadRequestException {
-		User user = userRepository.findByEmailOrMobileNumberAndIsDeletedFalse(request.email(), request.mobileNumber());
-		if(user==null) {
-			throw new BadRequestException("Incorrect Email or Mobile Number");
-		}
+		User user = userRepository.findByEmailOrMobileAndIsDeletedFalse(request.userName())
+				.orElseThrow(() -> new BadRequestException("Incorrect Email or Mobile Number"));
+		
 		if(!user.isEnabled()) {
 			throw new BadRequestException("Your access has been disabled");		
 		}
 		if(!user.getPassword().equals(passwordEncoder.encode(request.password()))) {
 			throw new BadRequestException("Incorrect Password");
 		}
-		return new UserResponse(user.getMobileNumber(), user.getEmail(), false, false, null);
+		String role = user.getUserRoles().getFirst().getRole().name();
+		
+		String accessToken = jwtTokenUtil.generateToken(request.userName(), Map.ofEntries(Map.entry("role", role)));
+		return new UserResponse(user.getMobileNumber(), user.getEmail(), user.isEmailVerified(), user.isMobileNumberVerified(), role, accessToken);
+	
+	}
+
+
+	@Override
+	public UserResponse registerUser(LoginRequest request) {
+		return null;
 	}
 
 }
