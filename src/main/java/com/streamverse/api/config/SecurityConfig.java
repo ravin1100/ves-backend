@@ -26,7 +26,7 @@ public class SecurityConfig {
 	private final JwtRequestFilter jwtRequestFilter;
 	
 	
-	private static final String[] WHIT_LIST_URLS = {
+	private static final String[] WHITE_LIST_URLS = {
 			
 			"user/autheticate"
 	};
@@ -44,7 +44,7 @@ public class SecurityConfig {
 					configuration.setMaxAge(3600L);
 					return configuration;
 				}))
-				.authorizeHttpRequests(request -> request.requestMatchers(WHIT_LIST_URLS).permitAll()
+				.authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST_URLS).permitAll()
 						.anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))

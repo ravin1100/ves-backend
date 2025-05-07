@@ -7,7 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.streamverse.api.dto.request.auth.LoginRequest;
-import com.streamverse.api.dto.response.user.UserResponse;
+import com.streamverse.api.dto.request.auth.SignUpRequest;
+import com.streamverse.api.dto.response.user.JwtResponse;
 import com.streamverse.api.model.user.User;
 import com.streamverse.api.repository.IUserRepository;
 import com.streamverse.api.utility.JwtTokenUtil;
@@ -24,7 +25,7 @@ public class UserAuthServiceImpl implements IUserAuthService{
 	
 
 	@Override
-	public UserResponse authenticateUser(LoginRequest request) throws BadRequestException {
+	public JwtResponse signIn(LoginRequest request) throws BadRequestException {
 		User user = userRepository.findByEmailOrMobileAndIsDeletedFalse(request.userName())
 				.orElseThrow(() -> new BadRequestException("Incorrect Email or Mobile Number"));
 		
@@ -34,17 +35,20 @@ public class UserAuthServiceImpl implements IUserAuthService{
 		if(!user.getPassword().equals(passwordEncoder.encode(request.password()))) {
 			throw new BadRequestException("Incorrect Password");
 		}
-		String role = user.getUserRoles().getFirst().getRole().name();
 		
+		String role = user.getRole().name();
 		String accessToken = jwtTokenUtil.generateToken(request.userName(), Map.ofEntries(Map.entry("role", role)));
-		return new UserResponse(user.getMobileNumber(), user.getEmail(), user.isEmailVerified(), user.isMobileNumberVerified(), role, accessToken);
+		return new JwtResponse(user.getMobileNumber(), user.getEmail(), user.isEmailVerified(), user.isMobileNumberVerified(), role, accessToken);
 	
 	}
 
 
 	@Override
-	public UserResponse registerUser(LoginRequest request) {
-		return null;
+	public void signUp(SignUpRequest request) {
 	}
+	
+//	private String generateRefreshToken() {
+//		
+//	}
 
 }

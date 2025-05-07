@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class UserResponse{
+public class JwtResponse{
 	
 	private String mobileNumber;
 	private String email;

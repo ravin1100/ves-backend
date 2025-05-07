@@ -13,6 +13,8 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 	
 	@Query("SELECT u FROM User u WHERE u.email = :userName OR u.mobileNumber = :userName AND isDeleted = false")
 	Optional<User> findByEmailOrMobileAndIsDeletedFalse(@Param("userName") String userName);
+	
+	Optional<User> findByEmailAndIsEnabledTrueAndIsDeletedFalse(String email);
 
 	
 }

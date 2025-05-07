@@ -1,7 +1,6 @@
 package com.streamverse.api.utility;
 
 import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,10 +12,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.streamverse.api.model.user.Role;
-import com.streamverse.api.service.auth.impl.UserDetailsImpl;
+import com.streamverse.api.service.auth.impl.CustomUserDetails;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 @Component
@@ -27,20 +27,34 @@ public class JwtTokenUtil {
 
 	@Value("${app.jwt.secret}")
 	private String jwtsecret;
+	
+	public String generateToken(String userName, Map<String, Object> map) {
+		return doGenerateToken(userName, map);
+	}
+	
+	private String doGenerateToken(String subject, Map<String, Object> claims) {
+		return Jwts.builder().subject(subject).claims(claims).issuedAt(new Date(System.currentTimeMillis()))
+				.expiration(new Date(System.currentTimeMillis() + jwtExpirationInMs  ))
+				.signWith(getKey()).compact();
+	}
+	
+	private Key getKey() {
+		byte[] keyBytes = Decoders.BASE64.decode(jwtsecret);
+		SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+		return key;
+	}
 
 	public String getUserNameFromToken(String token) {
 		return getClaimFromToken(token, Claims::getSubject);
 	}
 
-	public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+	private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
 		final Claims claims = getAllClaimsFromToken(token);
 		return claimsResolver.apply(claims);
 	}
 
 	private Claims getAllClaimsFromToken(String token) {
-		byte[] keyBytes = Base64.getDecoder().decode(jwtsecret);
-		SecretKey key = Keys.hmacShaKeyFor(keyBytes); 
-		return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+		return Jwts.parser().verifyWith((SecretKey)getKey()).build().parseSignedClaims(token).getPayload();
 	}
 
 	public Date getIssuedAtDateFromToken(String token) {
@@ -55,19 +69,7 @@ public class JwtTokenUtil {
 		final Date expiration = getExpirationDateFromToken(token);
 		return expiration.before(new Date());
 	}
-
-	public String generateToken(String userName, Map<String, Object> map) {
-		return doGenerateToken(map, userName);
-	}
-
-	private String doGenerateToken(Map<String, Object> claims, String subject) {
-		byte[] keyBytes = Base64.getDecoder().decode(jwtsecret);
-		Key key = Keys.hmacShaKeyFor(keyBytes);
-		return Jwts.builder().claims(claims).issuedAt(new Date(System.currentTimeMillis()))
-				.expiration(new Date(System.currentTimeMillis() + jwtExpirationInMs)).subject(subject)
-				.signWith(key).compact();
-	}
-
+	
 	public Role getRoleFromJwtToken(String token) {
 		Claims allClaimsFromToken = getAllClaimsFromToken(token);
 		return Role.valueOf((String) allClaimsFromToken.get("ROLE"));
@@ -75,15 +77,19 @@ public class JwtTokenUtil {
 
 	public boolean validateToken(String token, UserDetails userDetails) {
 		final String username = getUserNameFromToken(token);
-		var userDetail = (UserDetailsImpl) userDetails;
-		return (username.equals(userDetail.getEmail()) || username.equals(userDetail.getMobileNumber()))
-				&& !isTokenExpired(token);
+		var userDetail = (CustomUserDetails) userDetails;
+		return (username.equals(userDetail.getUsername()) && !isTokenExpired(token));
 	}
 	
-//	public Boolean validateToken(String token, UserDetails userDetails) {
-//		final String username = getUserNameFromToken(token);
-//		boolean val = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-//		return val;
-//	}
+//	public String generateToken(UserDetails userDetails) {
+//	CustomUserDetails userDetail = (CustomUserDetails)userDetails;
+//	Map<String, Object> claims = new HashMap<>();
+//
+//	claims.put("Role", userDetail.getRole());
+//	return Jwts.builder().subject(userDetails.getUsername()).claims(claims).issuedAt(new Date(System.currentTimeMillis()))
+//			.expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
+//			.signWith(getKey(jwtsecret)).compact();
+//}
+	
 	
 }

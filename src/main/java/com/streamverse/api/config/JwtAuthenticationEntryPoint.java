@@ -25,20 +25,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint{
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
 		
-		final String warning = (String) request.getAttribute("warning");
-        response.addHeader("Content-Type", "application/json;charset=UTF-8");
-        if (warning != null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ExceptionResponse exceptionResponse = new ExceptionResponse(DateTimeUtil.getCurrentTimeStamp(), HttpStatus.BAD_REQUEST.value(),
-                    "BAD_REQUEST", warning, "", null);
-            objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
-        } else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            ExceptionResponse exceptionResponse = new ExceptionResponse(DateTimeUtil.getCurrentTimeStamp(),
-                    HttpStatus.FORBIDDEN.value(), "SESSION_EXPIRED", "Session Expired", request.getRequestURI(), null);
-            objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
-        }
-        response.flushBuffer();
+		response.addHeader("Content-Type", "application/json;charset=UTF-8");
+		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+		ExceptionResponse exceptionResponse = new ExceptionResponse(DateTimeUtil.getCurrentTimeStamp(),
+				HttpStatus.FORBIDDEN.value(), "SESSION_EXPIRED", "Session Expired", request.getRequestURI(), null);
+		objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
+		response.flushBuffer();
 		
 	}
 

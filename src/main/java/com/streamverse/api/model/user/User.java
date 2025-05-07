@@ -1,16 +1,15 @@
 package com.streamverse.api.model.user;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
@@ -18,7 +17,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "users")
-public class User {
+public class User{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,17 +26,20 @@ public class User {
 	@Column(nullable = false, updatable = false)
 	private String uid = UUID.randomUUID().toString();
 	
-	@Column(unique = true)
-	private String mobileNumber;
+	private String fullName;
 	
 	@Column(unique = true)
 	@Email(message = "Invalid Email Format")
 	private String email;
 	
+	private String mobileNumber;
+	
 	private String password;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
-	private List<UserRole> userRoles;
+	private LocalDate dateOfBirth;
+	
+	@Enumerated(EnumType.STRING)
+	private Role role;
 	
 	@Column(columnDefinition = "boolean default false")
 	private boolean isEmailVerified;
@@ -50,5 +52,6 @@ public class User {
 	
 	@Column(columnDefinition = "boolean default false")
 	private boolean isEnabled;
+
 	
 }
